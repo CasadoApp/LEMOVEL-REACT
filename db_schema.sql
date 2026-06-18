@@ -1,4 +1,4 @@
--- Database schema recreated from Delphi DAO models
+-- Database schema recreated from Delphi DAO models (V4 - strict clean SQL parsing)
 
 CREATE TABLE `impressaoproducao` (
     `idproduto` INT,
@@ -10,7 +10,7 @@ CREATE TABLE `impressaoproducao` (
     `nomegarcom` VARCHAR(255),
     `quantidadeviaimpressao` INT,
     `idvenda` INT,
-    `TipoVenda` VARCHAR(255),
+    `tipovenda` VARCHAR(255),
     `impressorainterna` BOOLEAN
 );
 
@@ -18,6 +18,7 @@ CREATE TABLE `promocao` (
     `id_promocao` INT,
     `id_empresa` INT,
     `id_material` INT,
+    `tipo_desconto` INT,
     `dia_seg` BOOLEAN,
     `dia_ter` BOOLEAN,
     `dia_qua` BOOLEAN,
@@ -83,13 +84,16 @@ CREATE TABLE `empresas` (
     `consumacao_comanda` BOOLEAN,
     `consumacao_minima_comanda` DECIMAL(15, 2),
     `b_permite_troco_todas_formas` BOOLEAN,
-    `emp_003` VARCHAR(255),
     `emp_007` VARCHAR(255),
     `cep_004` VARCHAR(255),
-    `tel_princ` INT,
+    `emp_003` VARCHAR(255),
     `emp_013` VARCHAR(255),
+    `tel_princ` INT,
     `celular` VARCHAR(255),
+    `b_controle_opc` BOOLEAN,
     `b_casa_noturna` BOOLEAN,
+    `casa_controle` INT,
+    `utiliza_rp_movel` BOOLEAN,
     `taxa_adicional_mesa` BOOLEAN,
     `couvert_mesa` BOOLEAN,
     `couvert_obrig_mesa` BOOLEAN,
@@ -97,7 +101,10 @@ CREATE TABLE `empresas` (
     `valor_couvert_fem_mesa` DECIMAL(15, 2),
     `consumacao_mesa` BOOLEAN,
     `consumacao_minima_mesa` DECIMAL(15, 2),
-    `utiliza_rp_movel` BOOLEAN,
+    `b_atualiza_custo_material_composicao` BOOLEAN,
+    `b_considera_rendimento_entrada_composicao` BOOLEAN,
+    `tx_servico_m` VARCHAR(255),
+    `tx_servico_c` VARCHAR(255),
     `rp_movel_integracao_stone` BOOLEAN,
     `imprime_ficha_individual_mesa` BOOLEAN,
     `imprime_ficha_individual_comanda` BOOLEAN,
@@ -111,17 +118,22 @@ CREATE TABLE `encerravendaitem` (
     `emp_001` INT,
     `enc_001` INT,
     `ite_001` INT,
+    `ite_002` VARCHAR(255),
     `ite_003` DECIMAL(15, 2),
-    `id_formaPgto` INT,
+    `ite_004` VARCHAR(255),
+    `ite_005` VARCHAR(255),
+    `id_formapgto` INT,
     `troco_dinheiro` DECIMAL(15, 2),
     `b_nova_venda` BOOLEAN,
+    `for_001` VARCHAR(255),
     `for_002` VARCHAR(255),
+    `sit_001` VARCHAR(255),
     `sfi_codigo` INT
 );
 
 CREATE TABLE `venda_pag_antecipado` (
-    `id_venda` INT,
     `id_venda_pag_antecipado` INT,
+    `id_venda` INT,
     `id_empresa` INT,
     `data_hora` DATETIME,
     `valor` DECIMAL(15, 2),
@@ -133,6 +145,7 @@ CREATE TABLE `venda_pag_antecipado` (
     `b_taxa` BOOLEAN,
     `valor_taxa` DECIMAL(15, 2),
     `valor_prod` DECIMAL(15, 2),
+    `exibir_forma_app` BOOLEAN,
     `for_002` VARCHAR(255),
     `sfi_codigo` INT,
     `b_cortesia` BOOLEAN,
@@ -140,27 +153,49 @@ CREATE TABLE `venda_pag_antecipado` (
     `id_contacorrente` INT,
     `taxa_cartao` DECIMAL(15, 2),
     `prazo_cartao` INT,
-    `utilizaPagamentoOnline` BOOLEAN,
+    `utilizapagamentoonline` BOOLEAN,
+    `permite_pag_parcelado` BOOLEAN,
+    `juros` DOUBLE,
+    `emite_fiscal` BOOLEAN,
+    `id_situacao` INT
+);
+
+CREATE TABLE `setor_estoque_composicao` (
+    `id_empresa` INT,
+    `id_setor` INT,
+    `id_composicao` INT,
+    `quantidade` DECIMAL(15, 2)
+);
+
+CREATE TABLE `caixaitem` (
+    `item` VARCHAR(255),
+    `id_formapgto` INT,
+    `for_001` INT,
+    `emp_001` INT,
+    `for_002` VARCHAR(255),
+    `sfi_codigo` INT,
+    `b_cortesia` BOOLEAN,
+    `utiliza_controle_cartao` BOOLEAN,
+    `id_contacorrente` INT,
+    `taxa_cartao` DECIMAL(15, 2),
+    `prazo_cartao` INT,
+    `utilizapagamentoonline` BOOLEAN,
     `permite_pag_parcelado` BOOLEAN,
     `juros` DOUBLE,
     `emite_fiscal` BOOLEAN,
     `exibir_forma_app` BOOLEAN
 );
 
-CREATE TABLE `setor_estoque_composicao` (
-    `id_composicao` INT,
-    `id_setor` INT,
-    `id_empresa` INT,
-    `quantidade` DECIMAL(15, 2)
-);
-
 CREATE TABLE `encerravenda` (
+    `enc_001` VARCHAR(255),
     `emp_001` INT,
     `ven_001` INT,
+    `enc_002` VARCHAR(255),
     `enc_003` DECIMAL(15, 2),
+    `for_001` INT,
+    `sit_001` VARCHAR(255),
     `enc_006` DECIMAL(15, 2),
-    `enc_007` DECIMAL(15, 2),
-    `for_001` INT
+    `enc_007` DECIMAL(15, 2)
 );
 
 CREATE TABLE `cancelamento_pagamentos_stonepos` (
@@ -174,8 +209,10 @@ CREATE TABLE `cancelamento_pagamentos_stonepos` (
 );
 
 CREATE TABLE `opcional` (
+    `id_material_relacao` INT,
     `id_opcional` INT,
     `id_empresa` INT,
+    `valor_custo` DECIMAL(15, 2),
     `descricao` VARCHAR(255),
     `valor` DECIMAL(15, 2),
     `opc_p` VARCHAR(255),
@@ -183,13 +220,13 @@ CREATE TABLE `opcional` (
     `opc_g` VARCHAR(255),
     `opc_gg` VARCHAR(255),
     `opc_extra` VARCHAR(255),
+    `id_setor` INT,
     `valor_opc_p` DECIMAL(15, 2),
     `valor_opc_m` DECIMAL(15, 2),
     `valor_opc_g` DECIMAL(15, 2),
     `valor_opc_gg` DECIMAL(15, 2),
     `valor_opc_extra` DECIMAL(15, 2),
-    `id_setor` INT,
-    `valor_custo` DECIMAL(15, 2)
+    `tipo` INT
 );
 
 CREATE TABLE `venda_pag_antecipado_itens` (
@@ -204,29 +241,13 @@ CREATE TABLE `venda_pag_antecipado_itens` (
 
 CREATE TABLE `setor_estoque_opcional` (
     `id_opcional` INT,
-    `Id_setor` INT,
+    `id_setor` INT,
     `id_empresa` INT,
     `quantidade` DECIMAL(15, 2)
 );
 
-CREATE TABLE `caixaitem` (
-    `for_001` INT,
-    `emp_001` INT,
-    `for_002` VARCHAR(255),
-    `sfi_codigo` INT,
-    `b_cortesia` BOOLEAN,
-    `utiliza_controle_cartao` BOOLEAN,
-    `id_contacorrente` INT,
-    `taxa_cartao` DECIMAL(15, 2),
-    `prazo_cartao` INT,
-    `utilizaPagamentoOnline` BOOLEAN,
-    `permite_pag_parcelado` BOOLEAN,
-    `juros` DOUBLE,
-    `emite_fiscal` BOOLEAN,
-    `exibir_forma_app` BOOLEAN
-);
-
 CREATE TABLE `materiais` (
+    `imagem_db` LONGBLOB,
     `emp_001` INT,
     `mat_001` INT,
     `cat_001` INT,
@@ -251,12 +272,13 @@ CREATE TABLE `materiais` (
     `tamanho_g` VARCHAR(255),
     `tamanho_gg` VARCHAR(255),
     `tamanho_extra` VARCHAR(255),
+    `b_nao_taxa` BOOLEAN,
     `mat_021` INT,
     `mat_022` INT,
     `b_permite_frac` BOOLEAN,
     `b_proximogratis` BOOLEAN,
     `qtdeproximogratis` INT,
-    `usaQuantidadeDecimal` BOOLEAN,
+    `usaquantidadedecimal` BOOLEAN,
     `utiliza_combo` BOOLEAN,
     `id_setor` INT,
     `hh_ativar` BOOLEAN,
@@ -290,6 +312,8 @@ CREATE TABLE `materiais` (
 CREATE TABLE `vendaitem` (
     `emp_001` INT,
     `ven_001` INT,
+    `ite_001` VARCHAR(255),
+    `max` VARCHAR(255),
     `ven_004` DATETIME,
     `ven_008` DECIMAL(15, 2),
     `ven_009` DECIMAL(15, 2),
@@ -311,9 +335,11 @@ CREATE TABLE `vendaitem` (
     `taxa_cartao_reter` DECIMAL(15, 2),
     `total_pre` DECIMAL(15, 2),
     `ven_038` VARCHAR(255),
+    `sit_001` INT,
+    `ven_024` VARCHAR(255),
     `cli_002` VARCHAR(255),
     `cli_004` VARCHAR(255),
-    `ite_001` INT,
+    `column_name` VARCHAR(255),
     `mat_001` INT,
     `mesa_vinc` INT,
     `data_hora_lancamento` DATETIME,
@@ -323,7 +349,7 @@ CREATE TABLE `vendaitem` (
     `desconto` DECIMAL(15, 2),
     `acrescimo` DECIMAL(15, 2),
     `ite_006` VARCHAR(255),
-    `ProdutoImpresso` BOOLEAN,
+    `produtoimpresso` BOOLEAN,
     `ite_013` INT,
     `ite_014` INT,
     `gar_001` INT,
@@ -344,7 +370,7 @@ CREATE TABLE `vendaitem` (
     `qtd_paga_antec` DECIMAL(15, 2),
     `valor_pago_antec` DECIMAL(15, 2),
     `rateiotaxagarcom` DECIMAL(15, 2),
-    `nomeGarcom` VARCHAR(255),
+    `nomegarcom` VARCHAR(255),
     `tamanho_p` VARCHAR(255),
     `tamanho_m` VARCHAR(255),
     `tamanho_g` VARCHAR(255),
@@ -355,16 +381,18 @@ CREATE TABLE `vendaitem` (
 CREATE TABLE `caixa` (
     `id_caixa` INT,
     `id_empresa` INT,
+    `id_situacao` INT,
     `data_abertura` DATETIME,
     `valor_inicial` DECIMAL(15, 2)
 );
 
 CREATE TABLE `venda` (
-    `emp_001` INT,
     `com_001` INT,
-    `com_002` VARCHAR(255),
     `com_003` VARCHAR(255),
-    `ven_001` INT
+    `emp_001` INT,
+    `sit_001` VARCHAR(255),
+    `ven_001` INT,
+    `com_002` VARCHAR(255)
 );
 
 CREATE TABLE `venda_pre_pago` (
@@ -378,15 +406,15 @@ CREATE TABLE `venda_pre_pago` (
 
 CREATE TABLE `usuarios` (
     `usu_001` INT,
-    `emp_001` INT,
     `usu_002` VARCHAR(255),
-    `usu_003` VARCHAR(255),
-    `usu_004` VARCHAR(255),
+    `emp_001` INT,
     `b_transferencia_mesa` BOOLEAN,
     `b_permite_canc_item_mobile` BOOLEAN,
+    `usu_003` VARCHAR(255),
     `b_permite_prefechamento_mesa_comanda` BOOLEAN,
     `b_permite_fechamento_mesa_comanda` BOOLEAN,
     `b_permite_alterar_taxa10` BOOLEAN,
+    `usu_004` VARCHAR(255),
     `b_funcao_garcom` BOOLEAN,
     `desconto_max` DECIMAL(15, 2),
     `b_permite_juntar_mesa_comanda` BOOLEAN,
@@ -398,33 +426,37 @@ CREATE TABLE `usuarios` (
 CREATE TABLE `materiais_composicao` (
     `id_empresa` INT,
     `id_material` INT,
-    `id_composicao` INT,
     `quantidade` DECIMAL(15, 2),
+    `id_composicao` INT,
     `descricao` VARCHAR(255),
     `valor_custo` DECIMAL(15, 2),
     `estoque_minimo` DECIMAL(15, 2),
     `rendimento` DECIMAL(15, 2),
     `codigo_ref` VARCHAR(255),
     `id_setor` INT,
-    `b_baixar_setor_princ` BOOLEAN
+    `b_baixar_setor_princ` BOOLEAN,
+    `id_unidade` INT,
+    `id_situacao` INT
 );
 
 CREATE TABLE `setor_estoque_material` (
-    `id_empresa` INT,
     `id_material` INT,
     `id_setor` INT,
+    `id_empresa` INT,
     `quantidade` DECIMAL(15, 2)
 );
 
 CREATE TABLE `mesa` (
-    `emp_001` INT,
     `mes_001` INT,
     `mes_002` VARCHAR(255),
     `mes_003` VARCHAR(255),
-    `ven_001` INT,
+    `emp_001` INT,
+    `statusmesa` INT,
     `nome_reserva` VARCHAR(255),
     `telefone_reserva` VARCHAR(255),
-    `data_reserva` DATETIME
+    `data_reserva` DATETIME,
+    `hora_reserva` DATETIME,
+    `ven_001` INT
 );
 
 CREATE TABLE `vendaitemopcional` (
@@ -432,14 +464,15 @@ CREATE TABLE `vendaitemopcional` (
     `id_empresa` INT,
     `id_vendaitem` INT,
     `id_opcional` INT,
-    `descricao` VARCHAR(255),
     `gratis` BOOLEAN,
-    `valor` DECIMAL(15, 2)
+    `descricao` VARCHAR(255),
+    `valor` DECIMAL(15, 2),
+    `ord` VARCHAR(255)
 );
 
 CREATE TABLE `categoria` (
-    `cat_001` INT,
     `emp_001` INT,
+    `cat_001` INT,
     `cat_002` VARCHAR(255),
     `b_exibir_mobile` BOOLEAN
 );
@@ -451,6 +484,7 @@ CREATE TABLE `pagamentos_stone_pos` (
     `valorpago` DECIMAL(15, 2),
     `codigoautorizacao` VARCHAR(255),
     `datahora` DATETIME,
-    `terminal` VARCHAR(255),
-    `parcelas` INT
+    `bandeira` VARCHAR(255),
+    `parcelas` INT,
+    `terminal` VARCHAR(255)
 );
